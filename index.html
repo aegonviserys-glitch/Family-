@@ -254,18 +254,33 @@ const APP_URL=location.href.split("#")[0].split("?")[0];
 function gateEmail(){
   $("#gateBody").innerHTML=`<label>Email</label>
     <input id="a_mail" type="email" inputmode="email" autocomplete="email" placeholder="nama@contoh.com">
+    <label>Kata sandi</label>
+    <input id="a_pass" type="password" autocomplete="current-password" placeholder="••••••••">
     <div style="height:14px"></div>
-    <button class="btn btn-primary" id="a_send">Kirim tautan masuk</button>
-    <p class="note">Tautan sekali pakai dikirim ke email. Tidak perlu mengingat kata sandi.</p>`;
+    <button class="btn btn-primary" id="a_login">Masuk</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_send">Kirim tautan lewat email</button>
+    <p class="note">Tautan email dibatasi beberapa kali per jam. Kata sandi tidak ada batasnya.</p>`;
+  $("#a_login").onclick=loginPass;
   $("#a_send").onclick=sendCode;
-  $("#a_mail").addEventListener("keydown",e=>{if(e.key==="Enter")sendCode();});
+  $("#a_pass").addEventListener("keydown",e=>{if(e.key==="Enter")loginPass();});
+}
+async function loginPass(){
+  const email=$("#a_mail").value.trim().toLowerCase(),password=$("#a_pass").value;
+  if(!email||!password)return toast("Isi email dan kata sandi.");
+  const btn=$("#a_login");btn.disabled=true;btn.textContent="Memeriksa…";
+  const{data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error||!data.session){btn.disabled=false;btn.textContent="Masuk";return toast("Email atau kata sandi salah.");}
+  start(data.session);
 }
 async function sendCode(){
   const email=$("#a_mail").value.trim().toLowerCase();
   if(!email||!email.includes("@"))return toast("Masukkan alamat email yang benar.");
   const btn=$("#a_send");btn.disabled=true;btn.textContent="Mengirim…";
   const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:APP_URL}});
-  if(error){btn.disabled=false;btn.textContent="Kirim tautan masuk";return toast("Gagal mengirim. Periksa koneksi.");}
+  if(error){btn.disabled=false;btn.textContent="Kirim tautan lewat email";
+    return toast(String(error.message||"").toLowerCase().includes("rate")
+      ? "Jatah email sudah habis. Coba lagi satu jam lagi, atau masuk pakai kata sandi."
+      : "Gagal mengirim. Periksa koneksi.");}
   pendingEmail=email;gateSent();
 }
 function gateSent(){
@@ -637,9 +652,26 @@ window.openSettings=async function(){
   <p class="note">Daftar ini hanya bisa diubah lewat Supabase SQL Editor, bukan dari aplikasi. Itu yang menjaga orang lain tetap di luar.</p>
   <div class="sec-title" style="margin:22px 0 6px">Lainnya</div>
   <button class="btn btn-ghost" style="width:100%" onclick="syncNow()">Muat ulang dari server</button>
+  <button class="btn btn-ghost" style="width:100%;margin-top:9px" onclick="changePass()">Ganti kata sandi</button>
   <button class="btn btn-ghost" style="width:100%;margin-top:9px" onclick="exportJSON()">Simpan cadangan (.json)</button>
   <button class="btn btn-danger" style="width:100%;margin-top:9px" onclick="signOut()">Keluar dari perangkat ini</button>
   <div style="height:10px"></div>`);
+};
+window.changePass=function(){
+  openSheet(`<h2>Ganti kata sandi</h2><p class="note" style="margin-top:2px">Minimal 8 karakter. Berlaku untuk semua perangkat Anda.</p>
+    <label>Kata sandi baru</label><input id="c_p1" type="password" autocomplete="new-password">
+    <label>Ulangi</label><input id="c_p2" type="password" autocomplete="new-password">
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" id="c_go" onclick="changePassGo()">Simpan kata sandi</button>`);
+};
+window.changePassGo=async function(){
+  const a=$("#c_p1").value,b=$("#c_p2").value;
+  if(a.length<8)return toast("Minimal 8 karakter.");
+  if(a!==b)return toast("Kata sandi tidak sama.");
+  $("#c_go").disabled=true;
+  const{error}=await sb.auth.updateUser({password:a});
+  if(error){$("#c_go").disabled=false;return toast("Gagal mengganti kata sandi.");}
+  closeSheet();toast("Kata sandi diperbarui");
 };
 window.syncNow=async function(){try{await pull();render();toast("Data terbaru dimuat");}catch(e){fail(e);}};
 window.exportJSON=function(){
