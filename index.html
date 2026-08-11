@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Buku Keluarga</title>
+<meta name="theme-color" content="#14162b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" id="favicon" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#14162b;--ink2:#1c2043;--ink3:#262b57;--line:rgba(201,206,235,.14);
+    --kia:#f2748f;--jade:#4fd1a5;--gold:#f2b441;--mist:#a7adda;--paper:#f2f3ff;--r:18px}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--ink);color:var(--paper);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;padding-bottom:96px;overflow-x:hidden;-webkit-user-select:none;user-select:none}
+  input,textarea{-webkit-user-select:text;user-select:text}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(700px 400px at 80% -8%,rgba(242,116,143,.16),transparent 70%),radial-gradient(600px 400px at -10% 20%,rgba(79,209,165,.08),transparent 70%)}
+  h1,h2,h3{font-family:"Bricolage Grotesque",sans-serif;margin:0;letter-spacing:-.02em;line-height:1.15}
+  .mono{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+  header{padding:26px 0 14px;display:flex;align-items:flex-start;gap:10px}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mist)}
+  header h1{font-size:30px;font-weight:800;margin-top:6px}
+  header .sub{color:var(--mist);font-size:13px;margin-top:4px}
+  .gear{margin-left:auto;margin-top:8px;background:rgba(167,173,218,.12);border:1px solid var(--line);border-radius:12px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;flex:0 0 38px}
+  .gear svg{width:19px;height:19px;stroke:var(--mist);fill:none;stroke-width:1.7}
+  .card{background:linear-gradient(180deg,var(--ink2),rgba(28,32,67,.6));border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  .sec-title{font-family:"Bricolage Grotesque",sans-serif;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);margin:26px 0 10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .hero{background:linear-gradient(150deg,#2a1c3d,#1a1e40 55%,#14162b);border:1px solid rgba(242,116,143,.28);border-radius:24px;padding:20px;overflow:hidden;position:relative}
+  .hero .name{font-size:13px;color:var(--kia);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+  .age-big{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:44px;line-height:1;margin-top:8px}
+  .age-big small{font-size:18px;font-weight:600;color:var(--mist);margin-left:2px}
+  .daycount{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--mist);margin-top:8px}
+  .daycount b{color:var(--paper)}
+  .ribbon{margin-top:20px}
+  .ribbon-track{position:relative;height:46px}
+  .ribbon-line{position:absolute;top:22px;left:0;right:0;height:3px;background:rgba(167,173,218,.18);border-radius:2px}
+  .ribbon-fill{position:absolute;top:22px;left:0;height:3px;background:linear-gradient(90deg,var(--kia),#f9a06a);border-radius:2px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .tick{position:absolute;top:16px;width:1px;height:8px;background:rgba(167,173,218,.35);transform:translateX(-.5px)}
+  .flag{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--mist)}
+  .flag i{display:block;width:7px;height:7px;border-radius:50%;border:1.5px solid rgba(167,173,218,.5);margin:2px auto 0}
+  .flag.done i{background:var(--jade);border-color:var(--jade)}
+  .flag.now i{background:var(--kia);border-color:var(--kia);box-shadow:0 0 0 5px rgba(242,116,143,.2)}
+  .flag.now{color:var(--kia)}
+  .ribbon-cap{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--mist);margin-top:4px}
+  .member{display:flex;gap:13px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(28,32,67,.5);margin-bottom:9px;cursor:pointer}
+  .member:active{background:rgba(38,43,87,.7)}
+  .avatar{width:42px;height:42px;border-radius:13px;flex:0 0 42px;display:grid;place-items:center;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16px;color:#14162b}
+  .m-name{font-weight:600;font-size:15px}
+  .m-meta{font-size:12px;color:var(--mist);margin-top:1px}
+  .m-right{margin-left:auto;text-align:right}
+  .countdown{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:700}
+  .countdown small{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);font-weight:400}
+  .today-badge{background:var(--gold);color:#14162b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:.06em;text-transform:uppercase}
+  .window-nav{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+  .window-nav::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px;border-radius:99px;border:1px solid var(--line);background:rgba(28,32,67,.6);font-size:13px;color:var(--mist);font-family:"JetBrains Mono",monospace;cursor:pointer}
+  .chip.active{background:var(--kia);border-color:var(--kia);color:#14162b;font-weight:700}
+  .chip.passed{color:var(--jade);border-color:rgba(79,209,165,.35)}
+  .cat{font-family:"Bricolage Grotesque",sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--kia);margin:16px 0 8px}
+  .cat:first-child{margin-top:4px}
+  .item{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(201,206,235,.07);cursor:pointer}
+  .item:last-child{border-bottom:0}
+  .box{flex:0 0 21px;width:21px;height:21px;border-radius:7px;border:1.5px solid rgba(167,173,218,.4);margin-top:1px;display:grid;place-items:center;font-size:12px;color:#14162b}
+  .box.on{background:var(--jade);border-color:var(--jade)}
+  .item.on .txt{color:var(--mist);text-decoration:line-through;text-decoration-color:rgba(167,173,218,.4)}
+  .txt{font-size:14px;flex:1}
+  .stamp{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--jade);margin-top:2px}
+  .prog{height:5px;border-radius:3px;background:rgba(167,173,218,.15);overflow:hidden;margin-top:10px}
+  .prog i{display:block;height:100%;background:var(--jade);border-radius:3px;transition:width .4s}
+  svg.chart{width:100%;height:150px;display:block;margin-top:6px}
+  .glabel{font-family:"JetBrains Mono",monospace;font-size:9px;fill:var(--mist)}
+  label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);margin:12px 0 5px;font-weight:600}
+  input,select,textarea{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(20,22,43,.8);color:var(--paper);font-family:"Public Sans",sans-serif;font-size:15px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--kia);outline-offset:1px;border-color:transparent}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 18px;border-radius:13px;border:0;font-family:"Public Sans",sans-serif;font-weight:600;font-size:14px;cursor:pointer}
+  .btn-primary{background:var(--kia);color:#14162b;width:100%}
+  .btn-ghost{background:rgba(167,173,218,.12);color:var(--paper);border:1px solid var(--line)}
+  .btn-danger{background:rgba(242,116,143,.14);color:var(--kia);border:1px solid rgba(242,116,143,.3)}
+  .btn[disabled]{opacity:.5;pointer-events:none}
+  .btn-add{width:100%;padding:13px;border-radius:14px;border:1.5px dashed rgba(167,173,218,.3);background:transparent;color:var(--mist);font-family:"Public Sans",sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .toggle{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid rgba(201,206,235,.07);cursor:pointer}
+  .scrim{position:fixed;inset:0;background:rgba(10,11,24,.72);backdrop-filter:blur(3px);z-index:40;opacity:0;pointer-events:none;transition:opacity .22s}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#1a1e3d;border-radius:26px 26px 0 0;border-top:1px solid var(--line);padding:8px 18px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.9,.2,1);max-width:560px;margin:0 auto}
+  .sheet.on{transform:translateY(0)}
+  .grab{width:38px;height:4px;border-radius:2px;background:rgba(167,173,218,.3);margin:6px auto 14px}
+  .sheet h2{font-size:21px;font-weight:800;margin-bottom:2px}
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(20,22,43,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:none}
+  nav.on{display:block}
+  .tabs{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+  .tab{background:0;border:0;color:var(--mist);font-family:"Public Sans",sans-serif;font-size:11px;font-weight:600;padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .tab.on{color:var(--kia)}
+  .empty{text-align:center;color:var(--mist);font-size:14px;padding:22px 10px;line-height:1.6}
+  .pill{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:10px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mist);background:0;cursor:pointer}
+  .note{font-size:11px;color:var(--mist);line-height:1.55;margin-top:10px}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,14px);background:var(--ink3);border:1px solid var(--line);padding:10px 16px;border-radius:99px;font-size:13px;z-index:70;opacity:0;transition:.25s;max-width:88vw;text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  #gate{position:fixed;inset:0;z-index:80;background:var(--ink);display:grid;place-items:center;padding:24px}
+  #gate .box2{width:100%;max-width:340px}
+  .offline{background:rgba(242,180,65,.12);border:1px solid rgba(242,180,65,.3);color:var(--gold);font-size:12px;padding:9px 13px;border-radius:12px;margin-bottom:12px;display:none}
+  .offline.on{display:block}
+  .hidden{display:none}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<script>
+/* Ikon dan manifest dibuat saat halaman dimuat, supaya seluruh aplikasi
+   cukup satu berkas index.html di repo. */
+(function(){
+  var ICON = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%20width%3D%22512%22%20height%3D%22512%22%3E%20%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%2314162b%22%2F%3E%20%3Ccircle%20cx%3D%22256%22%20cy%3D%22120%22%20r%3D%22150%22%20fill%3D%22%23f2748f%22%20opacity%3D%220.14%22%2F%3E%20%3Cline%20x1%3D%2286%22%20y1%3D%22360%22%20x2%3D%22426%22%20y2%3D%22360%22%20stroke%3D%22%23a7adda%22%20stroke-width%3D%2210%22%20stroke-opacity%3D%220.35%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Cg%20stroke%3D%22%23a7adda%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%3E%20%3Cline%20x1%3D%2286%22%20y1%3D%22336%22%20x2%3D%2286%22%20y2%3D%22360%22%2F%3E%20%3Cline%20x1%3D%22171%22%20y1%3D%22342%22%20x2%3D%22171%22%20y2%3D%22360%22%2F%3E%20%3Cline%20x1%3D%22256%22%20y1%3D%22336%22%20x2%3D%22256%22%20y2%3D%22360%22%2F%3E%20%3Cline%20x1%3D%22341%22%20y1%3D%22342%22%20x2%3D%22341%22%20y2%3D%22360%22%2F%3E%20%3Cline%20x1%3D%22426%22%20y1%3D%22336%22%20x2%3D%22426%22%20y2%3D%22360%22%2F%3E%20%3C%2Fg%3E%20%3Cpath%20d%3D%22M86%20360%20L256%20360%22%20stroke%3D%22%23f2748f%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22%2F%3E%20%3Ccircle%20cx%3D%22256%22%20cy%3D%22360%22%20r%3D%2226%22%20fill%3D%22%23f2748f%22%2F%3E%20%3Ccircle%20cx%3D%22256%22%20cy%3D%22360%22%20r%3D%2244%22%20fill%3D%22none%22%20stroke%3D%22%23f2748f%22%20stroke-width%3D%2210%22%20stroke-opacity%3D%220.35%22%2F%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%23f2f3ff%22%20stroke-width%3D%2222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%20%3Ccircle%20cx%3D%22256%22%20cy%3D%22168%22%20r%3D%2262%22%2F%3E%20%3Cpath%20d%3D%22M256%20236%20C%20200%20236%20172%20268%20172%20262%22%2F%3E%20%3C%2Fg%3E%20%3Ccircle%20cx%3D%22234%22%20cy%3D%22160%22%20r%3D%2211%22%20fill%3D%22%2314162b%22%2F%3E%20%3Ccircle%20cx%3D%22278%22%20cy%3D%22160%22%20r%3D%2211%22%20fill%3D%22%2314162b%22%2F%3E%20%3Cpath%20d%3D%22M236%20192%20q20%2016%2040%200%22%20fill%3D%22none%22%20stroke%3D%22%2314162b%22%20stroke-width%3D%2212%22%20stroke-linecap%3D%22round%22%2F%3E%20%3C%2Fsvg%3E";
+  document.getElementById("favicon").href = ICON;
+  var apple = document.createElement("link");
+  apple.rel = "apple-touch-icon"; apple.href = ICON;
+  document.head.appendChild(apple);
+  var base = location.href.split("#")[0].split("?")[0];
+  var mf = {
+    name:"Buku Keluarga", short_name:"Keluarga",
+    description:"Profil keluarga, milestone, dan imunisasi.",
+    start_url: base, scope: base.replace(/[^/]*$/, ""),
+    display:"standalone", orientation:"portrait",
+    background_color:"#14162b", theme_color:"#14162b",
+    icons:[{src:ICON,sizes:"any",type:"image/svg+xml",purpose:"any"},
+           {src:ICON,sizes:"any",type:"image/svg+xml",purpose:"maskable"}]
+  };
+  var link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/manifest+json"}));
+  document.head.appendChild(link);
+})();
+</script>
+</head>
+<body>
+
+<div id="gate"><div class="box2">
+  <div class="eyebrow">Buku Keluarga</div>
+  <h1 style="font-size:28px;font-weight:800;margin:8px 0 6px">Masuk</h1>
+  <p class="note" style="margin:0 0 4px">Hanya email keluarga yang terdaftar bisa membuka data ini.</p>
+  <div id="gateBody"></div>
+</div></div>
+
+<div id="app" class="wrap"></div>
+
+<nav id="nav"><div class="tabs">
+  <button class="tab on" data-tab="keluarga">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M16 14.4c2.6-.4 4.5 1.4 4.5 4.6"/></svg>
+    Keluarga</button>
+  <button class="tab" data-tab="bayi">
+    <svg viewBox="0 0 24 24"><path d="M12 3.5c4.1 0 7 2.9 7 7v2.5c0 4-3 7-7 7s-7-3-7-7V10.5c0-4.1 2.9-7 7-7z"/><path d="M9.5 11h.01M14.5 11h.01"/><path d="M9.8 15c1.3 1.1 3.1 1.1 4.4 0"/></svg>
+    Tumbuh</button>
+  <button class="tab" data-tab="agenda">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+    Agenda</button>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+/* ============================================================
+   ISI DUA BARIS INI dari Supabase → Settings → API
+   ============================================================ */
+const SUPABASE_URL = "https://ybodvbslkxxtvtmcovwa.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_D_TWQovZI5JaiUOe4tRkaQ_siXxy7h2";
+/* ========================================================== */
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}
+});
+
+/* ============ referensi ============ */
+const MILESTONES = {
+  2:[["Sosial & emosi",["Tenang saat digendong atau diajak bicara","Menatap wajah Anda","Tersenyum saat Anda menyapa"]],
+     ["Bahasa",["Mengeluarkan suara selain menangis","Bereaksi pada suara keras"]],
+     ["Kognitif",["Memperhatikan wajah","Mengikuti benda bergerak dengan mata"]],
+     ["Gerak & fisik",["Menahan kepala saat tengkurap","Menggerakkan kedua lengan dan kaki"]]],
+  4:[["Sosial & emosi",["Tersenyum spontan untuk menarik perhatian","Terkekeh","Bergerak atau bersuara untuk mencari perhatian"]],
+     ["Bahasa",["Bersuara 'ooh' dan 'aah'","Bersuara balik saat diajak bicara","Menoleh ke arah suara"]],
+     ["Kognitif",["Membuka mulut saat melihat payudara atau botol","Melihat tangannya sendiri dengan tertarik"]],
+     ["Gerak & fisik",["Menahan kepala stabil tanpa disangga","Memegang mainan yang diletakkan di tangannya","Mendorong badan dengan siku saat tengkurap"]]],
+  6:[["Sosial & emosi",["Mengenali orang yang dikenal","Suka bercermin","Tertawa"]],
+     ["Bahasa",["Bergantian bersuara dengan Anda","Meniup gelembung ludah","Memekik"]],
+     ["Kognitif",["Memasukkan benda ke mulut untuk menjelajah","Meraih mainan yang diinginkan","Menutup mulut saat tidak mau makan"]],
+     ["Gerak & fisik",["Berguling dari tengkurap ke telentang","Bertumpu pada tangan lurus saat tengkurap","Duduk bersandar tanpa disangga"]]],
+  9:[["Sosial & emosi",["Malu atau takut pada orang asing","Menunjukkan ekspresi wajah yang jelas","Melihat saat namanya dipanggil"]],
+     ["Bahasa",["Mengoceh 'mamama', 'bababa'","Mengangkat tangan minta digendong"]],
+     ["Kognitif",["Mencari benda yang dijatuhkan","Memindahkan benda antar tangan"]],
+     ["Gerak & fisik",["Duduk sendiri tanpa disangga","Merangkak atau ngesot","Berdiri berpegangan"]]],
+  12:[["Sosial & emosi",["Bermain ciluk-ba","Menempel pada orang tua saat cemas"]],
+      ["Bahasa",["Melambaikan tangan 'dadah'","Memanggil 'mama' atau 'papa'","Paham kata 'jangan'"]],
+      ["Kognitif",["Memasukkan benda ke wadah","Mencari benda yang disembunyikan"]],
+      ["Gerak & fisik",["Berdiri sendiri sebentar","Menjumput makanan dengan ibu jari & telunjuk","Merambat"]]],
+  15:[["Sosial & emosi",["Menunjukkan mainan pada Anda","Bertepuk tangan saat senang","Memeluk boneka"]],
+      ["Bahasa",["Bicara 1-2 kata bermakna selain mama/papa","Menoleh saat dipanggil namanya","Menunjuk untuk meminta"]],
+      ["Kognitif",["Meniru pekerjaan rumah sederhana","Menumpuk 2 balok"]],
+      ["Gerak & fisik",["Berjalan sendiri","Minum dari gelas dengan bantuan","Makan sendiri pakai tangan"]]],
+  18:[["Sosial & emosi",["Menjauh lalu memastikan Anda masih dekat","Menunjuk agar Anda ikut melihat","Membantu saat dipakaikan baju"]],
+      ["Bahasa",["Mengucapkan 3 kata atau lebih","Mengikuti perintah satu langkah tanpa isyarat"]],
+      ["Kognitif",["Meniru pekerjaan rumah, misal menyapu","Bermain dengan mainan secara sederhana"]],
+      ["Gerak & fisik",["Berjalan tanpa berpegangan","Mencoret-coret","Naik tangga dengan bantuan"]]],
+  24:[["Sosial & emosi",["Memperhatikan reaksi Anda pada situasi baru","Melihat wajah Anda untuk tahu harus berbuat apa"]],
+      ["Bahasa",["Menggabungkan 2 kata, misal 'mau susu'","Menunjuk anggota badan saat ditanya","Menyebut benda di buku saat ditunjuk"]],
+      ["Kognitif",["Menggunakan tombol atau saklar mainan","Bermain dengan lebih dari satu mainan sekaligus"]],
+      ["Gerak & fisik",["Menendang bola","Berlari","Makan pakai sendok","Naik-turun perabot tanpa bantuan"]]]
+};
+const VAKSIN=[[0,"Hepatitis B-0 (< 24 jam)"],[0,"Polio tetes 0"],[1,"BCG"],
+ [2,"DTP-HepB-Hib 1"],[2,"Polio 1"],[2,"PCV 1"],[2,"Rotavirus 1"],
+ [3,"DTP-HepB-Hib 2"],[3,"Polio 2"],[3,"PCV 2"],[3,"Rotavirus 2"],
+ [4,"DTP-HepB-Hib 3"],[4,"Polio 3 / IPV"],[4,"PCV 3"],[4,"Rotavirus 3"],
+ [6,"Influenza 1"],[7,"Influenza 2"],[9,"Campak / MR 1"],
+ [12,"PCV booster"],[12,"Varisela 1"],[15,"Hib booster"],[15,"MMR"],
+ [18,"DTP-HepB-Hib 4"],[18,"Polio 4"],[18,"Campak / MR 2"],[24,"Hepatitis A"],[24,"Tifoid"]];
+const RELASI=["Ayah","Ibu","Anak","Suami","Istri","Kakek","Nenek","Saudara","Paman","Bibi","Sepupu","Keponakan","Mertua","Ipar","Lainnya"];
+const AVCOL=["#f2748f","#4fd1a5","#f2b441","#8b9cf5","#f19a6b","#c78bf0","#5ec8e0"];
+const CACHE="keluarga-cache";
+
+/* ============ util ============ */
+let DB={family:[],baby:{}},tab="keluarga",win=null,activeBaby=null,me=null,pendingEmail="";
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>crypto.randomUUID();
+const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());};
+const parse=s=>{if(!s)return null;const[y,m,d]=String(s).slice(0,10).split("-").map(Number);return new Date(y,m-1,d);};
+const BLN=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const HARI=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const fmt=s=>{const d=typeof s==="string"?parse(s):s;return d?`${d.getDate()} ${BLN[d.getMonth()]} ${d.getFullYear()}`:"—";};
+const fmtShort=d=>d?`${d.getDate()} ${BLN[d.getMonth()].slice(0,3)}`:"—";
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const daysBetween=(a,b)=>Math.round((b-a)/864e5);
+const addMonths=(d,m)=>new Date(d.getFullYear(),d.getMonth()+m,d.getDate());
+function ageParts(s){const b=parse(s);if(!b)return null;const n=today();
+  let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth(),d=n.getDate()-b.getDate();
+  if(d<0){m--;d+=new Date(n.getFullYear(),n.getMonth(),0).getDate();}
+  if(m<0){y--;m+=12;}return{y,m,d,totalDays:daysBetween(b,n),totalMonths:y*12+m};}
+function nextBirthday(s){const b=parse(s);if(!b)return null;const n=today();
+  let nx=new Date(n.getFullYear(),b.getMonth(),b.getDate());
+  if(nx<n)nx=new Date(n.getFullYear()+1,b.getMonth(),b.getDate());
+  return{date:nx,days:daysBetween(n,nx),turning:nx.getFullYear()-b.getFullYear()};}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),2300);}
+function fail(e){console.error(e);toast(navigator.onLine?"Gagal menyimpan ke server. Coba lagi.":"Sedang offline. Perubahan belum tersimpan.");}
+
+/* ============ auth ============ */
+const APP_URL=location.href.split("#")[0].split("?")[0];
+function gateEmail(){
+  $("#gateBody").innerHTML=`<label>Email</label>
+    <input id="a_mail" type="email" inputmode="email" autocomplete="email" placeholder="nama@contoh.com">
+    <label>Kata sandi</label>
+    <input id="a_pass" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div style="height:14px"></div>
+    <button class="btn btn-primary" id="a_login">Masuk</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_send">Kirim tautan lewat email</button>
+    <p class="note">Tautan email dibatasi beberapa kali per jam. Kata sandi tidak ada batasnya.</p>`;
+  $("#a_login").onclick=loginPass;
+  $("#a_send").onclick=sendCode;
+  $("#a_pass").addEventListener("keydown",e=>{if(e.key==="Enter")loginPass();});
+}
+async function loginPass(){
+  const email=$("#a_mail").value.trim().toLowerCase(),password=$("#a_pass").value;
+  if(!email||!password)return toast("Isi email dan kata sandi.");
+  const btn=$("#a_login");btn.disabled=true;btn.textContent="Memeriksa…";
+  const{data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error||!data.session){btn.disabled=false;btn.textContent="Masuk";return toast("Email atau kata sandi salah.");}
+  start(data.session);
+}
+async function sendCode(){
+  const email=$("#a_mail").value.trim().toLowerCase();
+  if(!email||!email.includes("@"))return toast("Masukkan alamat email yang benar.");
+  const btn=$("#a_send");btn.disabled=true;btn.textContent="Mengirim…";
+  const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:APP_URL}});
+  if(error){btn.disabled=false;btn.textContent="Kirim tautan lewat email";
+    return toast(String(error.message||"").toLowerCase().includes("rate")
+      ? "Jatah email sudah habis. Coba lagi satu jam lagi, atau masuk pakai kata sandi."
+      : "Gagal mengirim. Periksa koneksi.");}
+  pendingEmail=email;gateSent();
+}
+function gateSent(){
+  $("#gateBody").innerHTML=`<div class="card" style="margin:14px 0 0"><b>Email terkirim</b>
+    <p class="note" style="margin-top:6px">Buka email di ${esc(pendingEmail)}, lalu ketuk <b>Sign in</b>.
+    Halaman ini akan terbuka lagi dalam keadaan sudah masuk. Tautan berlaku sekali pakai.</p></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" id="a_code">Punya kode 6 angka?</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_back">Ganti email</button>
+    <p class="note">Belum masuk setelah satu menit? Cek folder spam.</p>`;
+  $("#a_code").onclick=gateCode;$("#a_back").onclick=gateEmail;
+}
+function gateCode(){
+  $("#gateBody").innerHTML=`<label>Kode untuk ${esc(pendingEmail)}</label>
+    <input id="a_otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"
+      style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:24px;letter-spacing:.35em">
+    <div style="height:14px"></div>
+    <button class="btn btn-primary" id="a_ok">Masuk</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_back">Kembali</button>
+    <p class="note">Hanya terpakai kalau email Anda memuat angka. Kalau isinya tautan, ketuk tautannya saja.</p>`;
+  $("#a_ok").onclick=verify;$("#a_back").onclick=gateSent;
+  $("#a_otp").addEventListener("keydown",e=>{if(e.key==="Enter")verify();});
+  $("#a_otp").focus();
+}
+async function verify(){
+  const token=$("#a_otp").value.trim();
+  if(token.length<6)return toast("Kode terdiri dari 6 angka.");
+  const btn=$("#a_ok");btn.disabled=true;btn.textContent="Memeriksa…";
+  const{data,error}=await sb.auth.verifyOtp({email:pendingEmail,token,type:"email"});
+  if(error||!data.session){btn.disabled=false;btn.textContent="Masuk";return toast("Kode salah atau kedaluwarsa.");}
+  start(data.session);
+}
+function gateDenied(email){
+  $("#gateBody").innerHTML=`<div class="card" style="margin-top:14px"><b>Akun belum diizinkan</b>
+    <p class="note" style="margin-top:6px">${esc(email)} berhasil masuk tapi belum terdaftar sebagai anggota keluarga, jadi tidak ada data yang bisa dibuka.
+    Pemilik dapat menambahkannya lewat Supabase SQL Editor.</p></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" id="a_out">Keluar</button>`;
+  $("#a_out").onclick=signOut;
+}
+window.signOut=async function(){
+  await sb.auth.signOut();
+  localStorage.removeItem(CACHE);
+  DB={family:[],baby:{}};me=null;
+  $("#nav").classList.remove("on");$("#app").innerHTML="";
+  closeSheet();$("#gate").style.display="grid";gateEmail();
+};
+
+/* ============ muat data ============ */
+function blank(){return{ms:{},vax:{},goals:[],growth:[]};}
+function bd(id){DB.baby[id]=DB.baby[id]||blank();return DB.baby[id];}
+async function pull(){
+  const[mem,ms,vx,gr,go]=await Promise.all([
+    sb.from("members").select("*"),sb.from("milestones").select("*"),
+    sb.from("vaccines").select("*"),sb.from("growth").select("*"),sb.from("goals").select("*")]);
+  if(mem.error)throw mem.error;
+  const next={family:mem.data||[],baby:{}};
+  (mem.data||[]).forEach(m=>next.baby[m.id]=blank());
+  (ms.data||[]).forEach(r=>{(next.baby[r.member_id]=next.baby[r.member_id]||blank()).ms[r.key]=r.achieved_on;});
+  (vx.data||[]).forEach(r=>{(next.baby[r.member_id]=next.baby[r.member_id]||blank()).vax[r.key]=r.given_on;});
+  (gr.data||[]).forEach(r=>{(next.baby[r.member_id]=next.baby[r.member_id]||blank()).growth.push(r);});
+  (go.data||[]).forEach(r=>{(next.baby[r.member_id]=next.baby[r.member_id]||blank()).goals.push(r);});
+  DB=next;
+  localStorage.setItem(CACHE,JSON.stringify(DB));
+  return (mem.data||[]).length;
+}
+async function start(session){
+  me=session.user;
+  $("#gate").style.display="none";$("#nav").classList.add("on");
+  const c=localStorage.getItem(CACHE);
+  if(c){try{DB=JSON.parse(c);}catch(e){}}
+  render();
+  try{
+    await pull();
+    const{data}=await sb.from("allowed_emails").select("email").limit(1);
+    if(!data||!data.length){$("#gate").style.display="grid";$("#nav").classList.remove("on");return gateDenied(me.email);}
+    render();
+  }catch(e){toast("Gagal memuat dari server. Menampilkan data tersimpan.");}
+  sb.channel("keluarga").on("postgres_changes",{event:"*",schema:"public"},()=>{
+    clearTimeout(window._rt);window._rt=setTimeout(()=>pull().then(render).catch(()=>{}),600);
+  }).subscribe();
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull().then(render).catch(()=>{});});
+}
+
+/* ============ sheet ============ */
+function openSheet(html){$("#sheetBody").innerHTML=html;$("#sheet").classList.add("on");$("#scrim").classList.add("on");}
+window.closeSheet=function(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on");};
+$("#scrim").onclick=closeSheet;
+
+/* ============ keluarga ============ */
+function viewKeluarga(){
+  const list=DB.family.map(m=>({m,nb:nextBirthday(m.tanggal)})).sort((a,b)=>(a.nb?a.nb.days:9999)-(b.nb?b.nb.days:9999));
+  const rows=list.map(({m,nb})=>{
+    const a=ageParts(m.tanggal),col=AVCOL[Math.abs((m.nama.charCodeAt(0)||65)+m.nama.length)%AVCOL.length];
+    const usia=a?(a.y>0?`${a.y} th`:`${a.totalMonths} bln`):"—";
+    const right=!nb?"":nb.days===0?`<span class="today-badge">Hari ini</span>`:`<div class="countdown">${nb.days}<small>hari lagi</small></div>`;
+    return `<div class="member" onclick="editMember('${m.id}')">
+      <div class="avatar" style="background:${col}">${esc((m.nama.trim()[0]||"?").toUpperCase())}</div>
+      <div><div class="m-name">${esc(m.nama)}${m.pantau?' <span class="pill" style="border-color:rgba(242,116,143,.4);color:var(--kia)">tumbuh</span>':""}</div>
+      <div class="m-meta">${esc(m.relasi||"")} · ${usia} · ${fmtShort(parse(m.tanggal))}</div></div>
+      <div class="m-right">${right}</div></div>`;}).join("");
+  return `<header><div><div class="eyebrow">Buku keluarga</div><h1>Orang-orang kita</h1>
+    <div class="sub">${DB.family.length?DB.family.length+" profil · diurutkan dari ulang tahun terdekat":"Belum ada profil"}</div></div>
+    <button class="gear" onclick="openSettings()" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 008.9 19a1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1A1.7 1.7 0 004.6 8.9a1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button></header>
+    <div class="offline ${navigator.onLine?"":"on"}" id="off">Sedang offline — data yang tampil dari salinan terakhir, perubahan belum bisa disimpan.</div>
+    ${rows||'<div class="empty">Mulai dari diri Anda sendiri, lalu pasangan, anak, dan orang tua.<br>Centang "Pantau tumbuh kembang" untuk anak yang masih bayi.</div>'}
+    <button class="btn-add" onclick="editMember()">+ Tambah anggota keluarga</button>`;
+}
+window.editMember=function(id){
+  const m=DB.family.find(x=>x.id===id)||{nama:"",relasi:"Anak",tanggal:"",goldar:"",telepon:"",catatan:"",pantau:false};
+  openSheet(`<h2>${id?"Ubah profil":"Anggota baru"}</h2>
+    <p class="note" style="margin-top:2px">Nama dan tanggal lahir wajib. Sisanya boleh menyusul.</p>
+    <label>Nama</label><input id="f_nama" value="${esc(m.nama)}" placeholder="Nama panggilan">
+    <div class="row2"><div><label>Hubungan</label><select id="f_rel">${RELASI.map(r=>`<option ${r===m.relasi?"selected":""}>${r}</option>`).join("")}</select></div>
+    <div><label>Gol. darah</label><input id="f_gol" value="${esc(m.goldar)}" placeholder="O+"></div></div>
+    <label>Tanggal lahir</label><input id="f_tgl" type="date" value="${esc(m.tanggal?String(m.tanggal).slice(0,10):"")}">
+    <label>Nomor telepon</label><input id="f_tel" value="${esc(m.telepon)}" placeholder="08...">
+    <label>Catatan</label><textarea id="f_cat" rows="2" placeholder="Alergi, ukuran baju, apa saja">${esc(m.catatan)}</textarea>
+    <div class="toggle" onclick="togglePantau()">
+      <div class="box ${m.pantau?"on":""}" id="f_pantau">${m.pantau?"✓":""}</div>
+      <div class="txt">Pantau tumbuh kembang<div class="stamp" style="color:var(--mist)">Milestone, imunisasi, dan grafik berat di tab Tumbuh</div></div></div>
+    <div style="height:18px"></div>
+    <button class="btn btn-primary" id="f_save" onclick="saveMember('${id||""}')">Simpan profil</button>
+    ${id?`<button class="btn btn-danger" style="width:100%;margin-top:9px" onclick="delMember('${id}')">Hapus profil</button>`:""}`);
+};
+window.togglePantau=function(){const b=$("#f_pantau");b.classList.toggle("on");b.textContent=b.classList.contains("on")?"✓":"";};
+window.saveMember=async function(id){
+  const nama=$("#f_nama").value.trim(),tanggal=$("#f_tgl").value;
+  if(!nama)return toast("Isi nama dulu.");
+  if(!tanggal)return toast("Isi tanggal lahir dulu.");
+  const row={id:id||uid(),nama,relasi:$("#f_rel").value,tanggal,goldar:$("#f_gol").value.trim(),
+    telepon:$("#f_tel").value.trim(),catatan:$("#f_cat").value.trim(),pantau:$("#f_pantau").classList.contains("on")};
+  $("#f_save").disabled=true;
+  const{error}=await sb.from("members").upsert(row);
+  if(error){$("#f_save").disabled=false;return fail(error);}
+  await pull();closeSheet();render();toast("Profil tersimpan");
+};
+window.delMember=function(id){
+  const m=DB.family.find(x=>x.id===id);
+  openSheet(`<h2>Hapus ${esc(m.nama)}?</h2><p class="note" style="margin-top:2px">Semua catatan tumbuh kembang, imunisasi, dan target milik profil ini ikut terhapus untuk semua perangkat. Tidak bisa dibatalkan.</p>
+    <div style="height:16px"></div>
+    <button class="btn btn-danger" style="width:100%" onclick="delMemberGo('${id}')">Ya, hapus permanen</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" onclick="closeSheet()">Batal</button>`);
+};
+window.delMemberGo=async function(id){
+  const{error}=await sb.from("members").delete().eq("id",id);
+  if(error)return fail(error);
+  if(activeBaby===id)activeBaby=null;
+  await pull();closeSheet();render();toast("Profil dihapus");
+};
+
+/* ============ bayi ============ */
+function babies(){return DB.family.filter(m=>m.pantau);}
+function totalCount(w){return MILESTONES[w].reduce((n,c)=>n+c[1].length,0);}
+function doneCount(id,w){const d=bd(id).ms;return MILESTONES[w].reduce((n,c,ci)=>n+c[1].filter((_,ii)=>d[`${w}-${ci}-${ii}`]).length,0);}
+
+function viewBayi(){
+  const bs=babies();
+  if(!bs.length)return `<header><div><div class="eyebrow">Tumbuh kembang</div><h1>Belum dipilih</h1></div></header>
+    <div class="card"><div class="empty">Buka tab Keluarga, buat profil anak, lalu centang "Pantau tumbuh kembang".<br>Halaman ini terisi otomatis dari tanggal lahirnya.</div>
+    <button class="btn btn-primary" onclick="editMember()">Tambah profil anak</button></div>`;
+  if(!activeBaby||!bs.find(b=>b.id===activeBaby))activeBaby=bs[0].id;
+  const m=bs.find(b=>b.id===activeBaby),D=bd(m.id),a=ageParts(m.tanggal),b=parse(m.tanggal);
+  const wins=Object.keys(MILESTONES).map(Number);
+  const active=win||wins.find(w=>w>=a.totalMonths)||24;
+  const done=doneCount(m.id,active),tot=totalCount(active);
+  const picker=bs.length>1?`<div class="window-nav">${bs.map(x=>`<button class="chip ${x.id===activeBaby?"active":""}" onclick="setBaby('${x.id}')">${esc(x.nama)}</button>`).join("")}</div>`:"";
+  const g=[...D.growth].sort((x,y)=>String(x.tanggal).localeCompare(String(y.tanggal))),last=g[g.length-1];
+  const vxNext=VAKSIN.map(([mo,nm],i)=>({mo,nm,k:"v"+i,due:addMonths(b,mo),dn:D.vax["v"+i]})).filter(v=>!v.dn).slice(0,6);
+  return `<header><div><div class="eyebrow">Tumbuh kembang</div><h1>${esc(m.nama)}</h1></div></header>
+  ${picker}
+  <div class="hero"><div class="name">${HARI[b.getDay()]}, ${fmt(m.tanggal)}</div>
+    <div class="age-big">${a.totalMonths>0?`${a.y>0?a.y+" tahun ":""}${a.m} bulan`:`${a.totalDays} hari`} <small>${a.totalMonths>0?a.d+" hari":""}</small></div>
+    <div class="daycount">HARI KE-<b>${a.totalDays}</b> · MINGGU KE-<b>${Math.floor(a.totalDays/7)}</b></div>
+    ${ribbon(m.id,a.totalMonths)}</div>
+  <div class="sec-title">Milestone <span class="pill">${done}/${tot} di ${active} bln</span></div>
+  <div class="window-nav">${wins.map(w=>`<button class="chip ${w===active?"active":(a.totalMonths>=w?"passed":"")}" onclick="setWin(${w})">${w} bln</button>`).join("")}</div>
+  <div class="card">${MILESTONES[active].map((cat,ci)=>`<div class="cat">${cat[0]}</div>`+cat[1].map((t,ii)=>{
+      const k=`${active}-${ci}-${ii}`,d=D.ms[k];
+      return `<div class="item ${d?"on":""}" onclick="toggleMs('${k}')"><div class="box ${d?"on":""}">${d?"✓":""}</div>
+      <div class="txt">${t}${d?`<div class="stamp">tercapai ${fmt(d)}</div>`:""}</div></div>`;}).join("")).join("")}
+    <div class="prog"><i style="width:${tot?done/tot*100:0}%"></i></div>
+    <p class="note">Acuan umum tahap perkembangan. Setiap anak punya ritme sendiri — bahas dengan dokter anak kalau ada yang terasa tertinggal.</p></div>
+
+  <div class="sec-title">Ukuran badan <button class="pill" onclick="editGrowth()">+ Catat</button></div>
+  <div class="card">${last?`<div style="display:flex;gap:22px;margin-bottom:6px;flex-wrap:wrap">
+      <div><div class="eyebrow">Berat</div><div class="mono" style="font-size:20px;font-weight:700">${esc(last.berat)||"—"}<span style="font-size:12px;color:var(--mist)"> kg</span></div></div>
+      <div><div class="eyebrow">Tinggi</div><div class="mono" style="font-size:20px;font-weight:700">${esc(last.tinggi)||"—"}<span style="font-size:12px;color:var(--mist)"> cm</span></div></div>
+      <div><div class="eyebrow">Lingkar kepala</div><div class="mono" style="font-size:20px;font-weight:700">${esc(last.kepala)||"—"}<span style="font-size:12px;color:var(--mist)"> cm</span></div></div></div>
+      ${chartSVG(g,b)}<div class="note">Terakhir ${fmt(last.tanggal)} · ${g.length} pengukuran · <span onclick="allGrowth()" style="color:var(--kia);cursor:pointer">lihat riwayat</span></div>`
+    :`<div class="empty">Belum ada pengukuran. Catat tiap habis timbang di posyandu atau dokter.</div>`}</div>
+
+  <div class="sec-title">Imunisasi</div>
+  <div class="card">${vxNext.map(v=>{const late=v.due<today();
+      return `<div class="item" onclick="toggleVax('${v.k}')"><div class="box"></div>
+      <div class="txt">${v.nm}<div class="stamp" style="color:${late?"var(--gold)":"var(--mist)"}">${late?"lewat jadwal · ":""}jadwal ${fmt(v.due)}</div></div></div>`;}).join("")||'<div class="empty">Semua jadwal sudah ditandai selesai.</div>'}
+    <div style="margin-top:12px"><button class="btn btn-ghost" style="width:100%" onclick="allVax()">Lihat semua ${VAKSIN.length} jadwal</button></div>
+    <p class="note">Ringkasan mengikuti jadwal IDAI. Cocokkan dengan buku KIA dan dokter anak.</p></div>
+
+  <div class="sec-title">Target pribadi <button class="pill" onclick="editGoal()">+ Tambah</button></div>
+  <div class="card">${D.goals.length?D.goals.map(x=>`<div class="item ${x.done?"on":""}">
+      <div class="box ${x.done?"on":""}" onclick="event.stopPropagation();toggleGoal('${x.id}')">${x.done?"✓":""}</div>
+      <div class="txt" onclick="editGoal('${x.id}')">${esc(x.judul)}
+      <div class="stamp" style="color:${x.done?"var(--jade)":"var(--mist)"}">${x.done?"selesai":"target "+fmt(x.target)}</div></div></div>`).join("")
+    :'<div class="empty">Target buatan sendiri: mulai MPASI, lepas dot, tidur di kamar sendiri.</div>'}</div>`;
+}
+function ribbon(id,am){
+  const MAX=24,flags=[2,4,6,9,12,15,18,24];
+  let ticks="";for(let i=0;i<=MAX;i++)ticks+=`<div class="tick" style="left:${i/MAX*100}%"></div>`;
+  const nowFlag=flags.find(f=>f>am)||24;
+  const fl=flags.map(f=>{const full=doneCount(id,f)===totalCount(f);
+    return `<div class="flag ${f===nowFlag?"now":(am>=f&&full?"done":"")}" style="left:${f/MAX*100}%">${f}<i></i></div>`;}).join("");
+  return `<div class="ribbon"><div class="ribbon-track">${ticks}<div class="ribbon-line"></div>
+    <div class="ribbon-fill" style="width:${Math.min(am/MAX,1)*100}%"></div>${fl}</div>
+    <div class="ribbon-cap"><span>LAHIR</span><span>PEMERIKSAAN BULAN KE-</span><span>2 TAHUN</span></div></div>`;
+}
+function chartSVG(g,b){
+  const pts=g.filter(x=>x.berat).map(x=>({x:daysBetween(b,parse(x.tanggal))/30.44,y:+x.berat}));
+  if(pts.length<2)return"";
+  const W=320,H=150,P=28,xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+  const x1=Math.max(...xs,3),y0=Math.min(...ys)*.9,y1=Math.max(...ys)*1.08;
+  const X=v=>P+v/(x1||1)*(W-P-10),Y=v=>H-22-(v-y0)/((y1-y0)||1)*(H-42);
+  const d=pts.map((p,i)=>`${i?"L":"M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Grafik berat badan">
+    <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2748f" stop-opacity=".35"/><stop offset="1" stop-color="#f2748f" stop-opacity="0"/></linearGradient></defs>
+    <path d="${d} L${X(pts[pts.length-1].x).toFixed(1)},${H-22} L${X(pts[0].x).toFixed(1)},${H-22} Z" fill="url(#ga)"/>
+    <path d="${d}" fill="none" stroke="#f2748f" stroke-width="2" stroke-linejoin="round"/>
+    ${pts.map(p=>`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="3" fill="#14162b" stroke="#f2748f" stroke-width="2"/>`).join("")}
+    <text class="glabel" x="${P}" y="${H-6}">0 bln</text><text class="glabel" x="${W-10}" y="${H-6}" text-anchor="end">${x1.toFixed(0)} bln</text>
+    <text class="glabel" x="4" y="${Y(y1)+8}">${y1.toFixed(1)} kg</text></svg>`;
+}
+window.setBaby=function(id){activeBaby=id;win=null;render();};
+window.setWin=function(w){win=w;render();};
+window.toggleMs=async function(k){
+  const D=bd(activeBaby),had=D.ms[k];
+  if(had){D.ms[k]=undefined;delete D.ms[k];render();
+    const{error}=await sb.from("milestones").delete().eq("member_id",activeBaby).eq("key",k);
+    if(error){D.ms[k]=had;render();fail(error);}}
+  else{const v=iso(today());D.ms[k]=v;render();
+    const{error}=await sb.from("milestones").upsert({member_id:activeBaby,key:k,achieved_on:v});
+    if(error){delete D.ms[k];render();fail(error);}}
+};
+window.toggleVax=async function(k){
+  const D=bd(activeBaby),had=D.vax[k];
+  if(had){delete D.vax[k];render();
+    const{error}=await sb.from("vaccines").delete().eq("member_id",activeBaby).eq("key",k);
+    if(error){D.vax[k]=had;render();fail(error);}}
+  else{const v=iso(today());D.vax[k]=v;render();
+    const{error}=await sb.from("vaccines").upsert({member_id:activeBaby,key:k,given_on:v});
+    if(error){delete D.vax[k];render();fail(error);}}
+};
+window.toggleGoal=async function(id){
+  const g=bd(activeBaby).goals.find(x=>x.id===id);g.done=!g.done;render();
+  const{error}=await sb.from("goals").update({done:g.done}).eq("id",id);
+  if(error){g.done=!g.done;render();fail(error);}
+};
+window.allVax=function(){
+  const m=DB.family.find(x=>x.id===activeBaby),b=parse(m.tanggal),D=bd(activeBaby);
+  openSheet(`<h2>Jadwal imunisasi</h2><p class="note" style="margin-top:2px">Ketuk untuk menandai sudah diberikan.</p>
+  ${VAKSIN.map(([mo,nm],i)=>{const k="v"+i,dn=D.vax[k];
+    return `<div class="item ${dn?"on":""}" onclick="toggleVax('${k}').then(allVax)"><div class="box ${dn?"on":""}">${dn?"✓":""}</div>
+      <div class="txt">${nm}<div class="stamp" style="color:var(--mist)">${mo} bln · ${fmt(addMonths(b,mo))}${dn?" · diberikan "+fmt(dn):""}</div></div></div>`;}).join("")}
+  <div style="height:16px"></div><button class="btn btn-ghost" style="width:100%" onclick="closeSheet()">Tutup</button>`);
+};
+window.allGrowth=function(){
+  const g=[...bd(activeBaby).growth].sort((a,b)=>String(b.tanggal).localeCompare(String(a.tanggal)));
+  openSheet(`<h2>Riwayat pengukuran</h2>
+  ${g.map(x=>`<div class="item" style="cursor:default"><div class="txt"><b class="mono">${esc(x.berat)||"—"} kg</b> · ${esc(x.tinggi)||"—"} cm · ${esc(x.kepala)||"—"} cm
+    <div class="stamp" style="color:var(--mist)">${fmt(x.tanggal)}</div></div>
+    <button class="pill" onclick="delGrowth('${x.id}')">hapus</button></div>`).join("")}
+  <div style="height:16px"></div><button class="btn btn-ghost" style="width:100%" onclick="closeSheet()">Tutup</button>`);
+};
+window.delGrowth=async function(id){
+  const{error}=await sb.from("growth").delete().eq("id",id);
+  if(error)return fail(error);
+  await pull();allGrowth();render();
+};
+window.editGrowth=function(){
+  openSheet(`<h2>Catat pengukuran</h2><p class="note" style="margin-top:2px">Isi yang ada saja.</p>
+    <label>Tanggal</label><input id="g_tgl" type="date" value="${iso(today())}">
+    <div class="row2"><div><label>Berat (kg)</label><input id="g_berat" type="number" step="0.01" inputmode="decimal" placeholder="7.8"></div>
+    <div><label>Tinggi (cm)</label><input id="g_tinggi" type="number" step="0.1" inputmode="decimal" placeholder="67"></div></div>
+    <label>Lingkar kepala (cm)</label><input id="g_kepala" type="number" step="0.1" inputmode="decimal" placeholder="43">
+    <div style="height:18px"></div><button class="btn btn-primary" id="g_save" onclick="saveGrowth()">Simpan pengukuran</button>`);
+};
+window.saveGrowth=async function(){
+  const row={id:uid(),member_id:activeBaby,tanggal:$("#g_tgl").value,
+    berat:$("#g_berat").value||null,tinggi:$("#g_tinggi").value||null,kepala:$("#g_kepala").value||null};
+  if(!row.tanggal)return toast("Isi tanggal dulu.");
+  if(!row.berat&&!row.tinggi&&!row.kepala)return toast("Isi minimal satu ukuran.");
+  $("#g_save").disabled=true;
+  const{error}=await sb.from("growth").insert(row);
+  if(error){$("#g_save").disabled=false;return fail(error);}
+  await pull();closeSheet();render();toast("Pengukuran tersimpan");
+};
+window.editGoal=function(id){
+  const g=bd(activeBaby).goals.find(x=>x.id===id)||{judul:"",target:""};
+  openSheet(`<h2>${id?"Ubah target":"Target baru"}</h2>
+    <label>Target</label><input id="t_judul" value="${esc(g.judul)}" placeholder="Mulai MPASI 3x sehari">
+    <label>Tanggal target</label><input id="t_tgl" type="date" value="${esc(g.target?String(g.target).slice(0,10):"")}">
+    <div style="height:18px"></div><button class="btn btn-primary" id="t_save" onclick="saveGoal('${id||""}')">Simpan target</button>
+    ${id?`<button class="btn btn-danger" style="width:100%;margin-top:9px" onclick="delGoal('${id}')">Hapus target</button>`:""}`);
+};
+window.saveGoal=async function(id){
+  const judul=$("#t_judul").value.trim(),target=$("#t_tgl").value||null;
+  if(!judul)return toast("Isi targetnya dulu.");
+  $("#t_save").disabled=true;
+  const row=id?{id,member_id:activeBaby,judul,target,done:bd(activeBaby).goals.find(x=>x.id===id).done}
+              :{id:uid(),member_id:activeBaby,judul,target,done:false};
+  const{error}=await sb.from("goals").upsert(row);
+  if(error){$("#t_save").disabled=false;return fail(error);}
+  await pull();closeSheet();render();toast("Target tersimpan");
+};
+window.delGoal=async function(id){
+  const{error}=await sb.from("goals").delete().eq("id",id);
+  if(error)return fail(error);
+  await pull();closeSheet();render();
+};
+
+/* ============ agenda ============ */
+function agendaItems(){
+  const n=today(),out=[];
+  DB.family.forEach(m=>{const nb=nextBirthday(m.tanggal);
+    if(nb)out.push({d:nb.date,t:`Ulang tahun ${m.nama}`,s:`${nb.turning} tahun`,c:"var(--gold)",yearly:true});});
+  babies().forEach(m=>{const b=parse(m.tanggal),D=bd(m.id);
+    VAKSIN.forEach(([mo,nm],i)=>{if(D.vax["v"+i])return;const due=addMonths(b,mo);
+      if(daysBetween(n,due)>-120)out.push({d:due,t:`${nm} — ${m.nama}`,s:`Imunisasi ${mo} bln`,c:"var(--jade)"});});
+    Object.keys(MILESTONES).map(Number).forEach(w=>{const due=addMonths(b,w),left=totalCount(w)-doneCount(m.id,w);
+      if(left>0&&daysBetween(n,due)>-60)out.push({d:due,t:`Cek milestone ${w} bulan — ${m.nama}`,s:`${left} poin belum tercapai`,c:"var(--kia)"});});
+    D.goals.filter(g=>!g.done&&g.target).forEach(g=>out.push({d:parse(g.target),t:g.judul,s:`Target ${m.nama}`,c:"#8b9cf5"}));});
+  return out.sort((a,b)=>a.d-b.d);
+}
+function viewAgenda(){
+  const n=today(),soon=agendaItems().filter(o=>daysBetween(n,o.d)>=-14).slice(0,30);
+  return `<header><div><div class="eyebrow">Agenda</div><h1>Yang akan datang</h1>
+    <div class="sub">Ulang tahun, imunisasi, milestone, dan target dalam satu urutan</div></div></header>
+    ${soon.map(o=>{const dd=daysBetween(n,o.d);
+      return `<div class="member" style="cursor:default"><div style="width:4px;height:38px;border-radius:2px;background:${o.c};flex:0 0 4px"></div>
+      <div><div class="m-name">${esc(o.t)}</div><div class="m-meta">${esc(o.s)} · ${fmt(o.d)}</div></div>
+      <div class="m-right"><div class="countdown" style="font-size:11px;color:${dd<0?"var(--gold)":"inherit"}">${dd===0?"HARI INI":dd<0?`${-dd} hari lewat`:`${dd} hari lagi`}</div></div></div>`;}).join("")
+      ||'<div class="empty">Belum ada agenda. Tambahkan profil keluarga dulu.</div>'}
+    ${soon.length?`<button class="btn-add" onclick="exportICS()">Kirim ke kalender ponsel (.ics)</button>`:""}
+    <p class="note">Aplikasi ini tidak membunyikan alarm sendiri saat tertutup. Ekspor ke kalender kalau ingin diingatkan H-1.</p>`;
+}
+function dl(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+window.exportICS=function(){
+  const p2=x=>String(x).padStart(2,"0"),dt=d=>`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
+  let s="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Buku Keluarga//ID\r\nCALSCALE:GREGORIAN\r\n";
+  agendaItems().forEach((o,i)=>{
+    const end=new Date(o.d.getFullYear(),o.d.getMonth(),o.d.getDate()+1);
+    s+="BEGIN:VEVENT\r\n"+`UID:bk-${i}-${dt(o.d)}@keluarga\r\n`+`DTSTAMP:${dt(today())}T090000Z\r\n`
+      +`DTSTART;VALUE=DATE:${dt(o.d)}\r\nDTEND;VALUE=DATE:${dt(end)}\r\n`
+      +`SUMMARY:${o.t.replace(/[,;\\]/g,"")}\r\nDESCRIPTION:${o.s.replace(/[,;\\]/g,"")}\r\n`
+      +(o.yearly?"RRULE:FREQ=YEARLY\r\n":"")
+      +"BEGIN:VALARM\r\nTRIGGER:-P1D\r\nACTION:DISPLAY\r\nDESCRIPTION:Pengingat\r\nEND:VALARM\r\nEND:VEVENT\r\n";});
+  s+="END:VCALENDAR";
+  dl(new Blob([s],{type:"text/calendar"}),"agenda-keluarga.ics");
+  toast("Buka file .ics untuk memasukkannya ke kalender");
+};
+
+/* ============ pengaturan ============ */
+window.openSettings=async function(){
+  const{data}=await sb.from("allowed_emails").select("email,nama").order("email");
+  openSheet(`<h2>Pengaturan</h2>
+  <div class="sec-title" style="margin:18px 0 6px">Masuk sebagai</div>
+  <div class="card" style="margin:0"><b>${esc(me?me.email:"—")}</b>
+    <p class="note" style="margin-top:4px">Data yang sama muncul di setiap perangkat yang masuk dengan email terdaftar.</p></div>
+  <div class="sec-title" style="margin:22px 0 6px">Yang punya akses</div>
+  ${(data||[]).map(x=>`<div class="item" style="cursor:default"><div class="txt">${esc(x.nama||"—")}
+    <div class="stamp" style="color:var(--mist)">${esc(x.email)}</div></div></div>`).join("")||'<div class="empty">Tidak terbaca.</div>'}
+  <p class="note">Daftar ini hanya bisa diubah lewat Supabase SQL Editor, bukan dari aplikasi. Itu yang menjaga orang lain tetap di luar.</p>
+  <div class="sec-title" style="margin:22px 0 6px">Lainnya</div>
+  <button class="btn btn-ghost" style="width:100%" onclick="syncNow()">Muat ulang dari server</button>
+  <button class="btn btn-ghost" style="width:100%;margin-top:9px" onclick="changePass()">Ganti kata sandi</button>
+  <button class="btn btn-ghost" style="width:100%;margin-top:9px" onclick="exportJSON()">Simpan cadangan (.json)</button>
+  <button class="btn btn-danger" style="width:100%;margin-top:9px" onclick="signOut()">Keluar dari perangkat ini</button>
+  <div style="height:10px"></div>`);
+};
+window.changePass=function(){
+  openSheet(`<h2>Ganti kata sandi</h2><p class="note" style="margin-top:2px">Minimal 8 karakter. Berlaku untuk semua perangkat Anda.</p>
+    <label>Kata sandi baru</label><input id="c_p1" type="password" autocomplete="new-password">
+    <label>Ulangi</label><input id="c_p2" type="password" autocomplete="new-password">
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" id="c_go" onclick="changePassGo()">Simpan kata sandi</button>`);
+};
+window.changePassGo=async function(){
+  const a=$("#c_p1").value,b=$("#c_p2").value;
+  if(a.length<8)return toast("Minimal 8 karakter.");
+  if(a!==b)return toast("Kata sandi tidak sama.");
+  $("#c_go").disabled=true;
+  const{error}=await sb.auth.updateUser({password:a});
+  if(error){$("#c_go").disabled=false;return toast("Gagal mengganti kata sandi.");}
+  closeSheet();toast("Kata sandi diperbarui");
+};
+window.syncNow=async function(){try{await pull();render();toast("Data terbaru dimuat");}catch(e){fail(e);}};
+window.exportJSON=function(){
+  dl(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}),`buku-keluarga-${iso(today())}.json`);
+  toast("Cadangan diunduh");
+};
+
+/* ============ boot ============ */
+function render(){
+  $("#app").innerHTML=tab==="keluarga"?viewKeluarga():tab==="bayi"?viewBayi():viewAgenda();
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.tab===tab));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{tab=t.dataset.tab;win=null;render();});
+window.addEventListener("online",()=>{const o=$("#off");if(o)o.classList.remove("on");syncNow();});
+window.addEventListener("offline",()=>{const o=$("#off");if(o)o.classList.add("on");});
+
+sb.auth.onAuthStateChange((event,session)=>{
+  if(session&&!me){history.replaceState(null,"",APP_URL);start(session);}
+});
+const{data:{session}}=await sb.auth.getSession();
+if(session)start(session);else if(!location.hash.includes("access_token"))gateEmail();
+</script>
+</body>
+</html>
