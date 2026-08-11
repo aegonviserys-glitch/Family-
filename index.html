@@ -174,7 +174,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_D_TWQovZI5JaiUOe4tRkaQ_siXxy7h2";
 /* ========================================================== */
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth:{persistSession:true,autoRefreshToken:true,storage:window.localStorage}
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}
 });
 
 /* ============ referensi ============ */
@@ -250,12 +250,13 @@ function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");setT
 function fail(e){console.error(e);toast(navigator.onLine?"Gagal menyimpan ke server. Coba lagi.":"Sedang offline. Perubahan belum tersimpan.");}
 
 /* ============ auth ============ */
+const APP_URL=location.href.split("#")[0].split("?")[0];
 function gateEmail(){
   $("#gateBody").innerHTML=`<label>Email</label>
     <input id="a_mail" type="email" inputmode="email" autocomplete="email" placeholder="nama@contoh.com">
     <div style="height:14px"></div>
-    <button class="btn btn-primary" id="a_send">Kirim kode masuk</button>
-    <p class="note">Kode 6 angka dikirim ke email. Tidak perlu mengingat kata sandi.</p>`;
+    <button class="btn btn-primary" id="a_send">Kirim tautan masuk</button>
+    <p class="note">Tautan sekali pakai dikirim ke email. Tidak perlu mengingat kata sandi.</p>`;
   $("#a_send").onclick=sendCode;
   $("#a_mail").addEventListener("keydown",e=>{if(e.key==="Enter")sendCode();});
 }
@@ -263,9 +264,18 @@ async function sendCode(){
   const email=$("#a_mail").value.trim().toLowerCase();
   if(!email||!email.includes("@"))return toast("Masukkan alamat email yang benar.");
   const btn=$("#a_send");btn.disabled=true;btn.textContent="Mengirim…";
-  const{error}=await sb.auth.signInWithOtp({email});
-  if(error){btn.disabled=false;btn.textContent="Kirim kode masuk";return toast("Gagal mengirim kode. Periksa koneksi.");}
-  pendingEmail=email;gateCode();
+  const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:APP_URL}});
+  if(error){btn.disabled=false;btn.textContent="Kirim tautan masuk";return toast("Gagal mengirim. Periksa koneksi.");}
+  pendingEmail=email;gateSent();
+}
+function gateSent(){
+  $("#gateBody").innerHTML=`<div class="card" style="margin:14px 0 0"><b>Email terkirim</b>
+    <p class="note" style="margin-top:6px">Buka email di ${esc(pendingEmail)}, lalu ketuk <b>Sign in</b>.
+    Halaman ini akan terbuka lagi dalam keadaan sudah masuk. Tautan berlaku sekali pakai.</p></div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:12px" id="a_code">Punya kode 6 angka?</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_back">Ganti email</button>
+    <p class="note">Belum masuk setelah satu menit? Cek folder spam.</p>`;
+  $("#a_code").onclick=gateCode;$("#a_back").onclick=gateEmail;
 }
 function gateCode(){
   $("#gateBody").innerHTML=`<label>Kode untuk ${esc(pendingEmail)}</label>
@@ -273,9 +283,9 @@ function gateCode(){
       style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:24px;letter-spacing:.35em">
     <div style="height:14px"></div>
     <button class="btn btn-primary" id="a_ok">Masuk</button>
-    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_back">Ganti email</button>
-    <p class="note">Cek folder spam kalau kode belum masuk dalam satu menit.</p>`;
-  $("#a_ok").onclick=verify;$("#a_back").onclick=gateEmail;
+    <button class="btn btn-ghost" style="width:100%;margin-top:9px" id="a_back">Kembali</button>
+    <p class="note">Hanya terpakai kalau email Anda memuat angka. Kalau isinya tautan, ketuk tautannya saja.</p>`;
+  $("#a_ok").onclick=verify;$("#a_back").onclick=gateSent;
   $("#a_otp").addEventListener("keydown",e=>{if(e.key==="Enter")verify();});
   $("#a_otp").focus();
 }
@@ -647,8 +657,11 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{tab=t.dataset.tab;wi
 window.addEventListener("online",()=>{const o=$("#off");if(o)o.classList.remove("on");syncNow();});
 window.addEventListener("offline",()=>{const o=$("#off");if(o)o.classList.add("on");});
 
+sb.auth.onAuthStateChange((event,session)=>{
+  if(session&&!me){history.replaceState(null,"",APP_URL);start(session);}
+});
 const{data:{session}}=await sb.auth.getSession();
-if(session)start(session);else gateEmail();
+if(session)start(session);else if(!location.hash.includes("access_token"))gateEmail();
 </script>
 </body>
 </html>
