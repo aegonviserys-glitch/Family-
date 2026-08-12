@@ -296,7 +296,7 @@
   <div class="eyebrow">Buku Keluarga</div>
   <h1 style="font-size:29px;font-weight:800;margin:8px 0 6px">Masuk</h1>
   <p class="note" style="margin:0 0 4px">Hanya ID keluarga yang terdaftar bisa membuka data ini.</p>
-  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v23 · MANDIRI</p>
+  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v25 · KUNCI JWT</p>
   <div id="gateBody">
     <label>ID</label>
     <input id="a_id" autocomplete="username" autocapitalize="characters" placeholder="MFCMMC YANI" style="letter-spacing:.06em">
@@ -305,6 +305,7 @@
     <div style="height:14px"></div>
     <button class="btn btn-primary" id="a_login">Masuk</button>
     <p class="note" id="a_hint">Memuat…</p>
+    <button class="btn btn-ghost" style="width:100%;margin-top:6px" id="a_test">Uji koneksi server</button>
   </div>
   <pre id="errbox" style="display:none;white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:10px;
     color:#ff9ab7;background:rgba(255,95,141,.08);border:1px solid rgba(255,95,141,.3);
@@ -383,7 +384,7 @@ window.addEventListener("unhandledrejection",function(e){
    Tidak ada pustaka luar, tidak ada CDN, jadi tidak bisa gagal dimuat.
    ============================================================ */
 const SUPABASE_URL = "https://ybodvbslkxxtvtmcovwa.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_D_TWQovZI5JaiUOe4tRkaQ_siXxy7h2";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlib2R2YnNsa3h4dHZ0bWNvdndhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MjY5MjEsImV4cCI6MjEwMjAwMjkyMX0.hxMUjWRD-c7BALHnMZM1VK5K1SC5DpnPbfxUsoE1UuI";
 const SKEY="kel-session";
 
 const SBA={
@@ -397,10 +398,11 @@ const SBA={
     return h;},
   async post(path,body,hdr){
     const r=await fetch(SUPABASE_URL+path,{method:"POST",
-      headers:Object.assign({apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"},hdr||{}),
+      headers:Object.assign({apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,
+        "Content-Type":"application/json"},hdr||{}),
       body:JSON.stringify(body)});
-    const j=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(j.error_description||j.msg||j.message||("HTTP "+r.status));
+    const t=await r.text();let j={};try{j=t?JSON.parse(t):{};}catch(e){j={raw:t};}
+    if(!r.ok)throw new Error("HTTP "+r.status+" — "+(j.error_description||j.msg||j.message||j.error||j.raw||"tanpa keterangan"));
     return j;},
   async refresh(){
     if(!this.ses||!this.ses.refresh_token)return null;
@@ -616,9 +618,32 @@ function zLabel(z){if(z==null)return["—",""];
 const APP_URL=location.href.split("#")[0].split("?")[0];
 /* ID diubah jadi alamat akun internal. Kata sandi tidak pernah disimpan di berkas ini. */
 const idToAccount=id=>id.trim().toLowerCase().replace(/\s+/g,".").replace(/[^a-z0-9._-]/g,"")+"@keluarga.app";
+window.ujiKoneksi=async function(){
+  const b=document.getElementById("a_test");b.disabled=true;b.textContent="Menguji…";
+  const box=document.getElementById("errbox");if(box){box.textContent="";box.style.display="block";}
+  __err("URL: "+SUPABASE_URL);
+  try{
+    const r=await fetch(SUPABASE_URL+"/auth/v1/health",{headers:{apikey:SUPABASE_ANON_KEY}});
+    __err("1. auth/health → HTTP "+r.status+" "+(await r.text()).slice(0,80));
+  }catch(e){__err("1. auth/health → GAGAL: "+e.message);}
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/allowed_emails?select=email&limit=1",
+      {headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY}});
+    __err("2. rest tanpa login → HTTP "+r.status+" "+(await r.text()).slice(0,80));
+  }catch(e){__err("2. rest → GAGAL: "+e.message);}
+  try{
+    const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({email:idToAccount(document.getElementById("a_id").value||"MFCMMC YANI"),
+        password:document.getElementById("a_pass").value||"x"})});
+    __err("3. login → HTTP "+r.status+" "+(await r.text()).slice(0,160));
+  }catch(e){__err("3. login → GAGAL: "+e.message);}
+  b.disabled=false;b.textContent="Uji koneksi server";
+};
 function gateEmail(){
   const hint=document.getElementById("a_hint");
   if(hint)hint.textContent="Gunakan ID keluarga, bukan alamat email.";
+  const tb=document.getElementById("a_test");if(tb)tb.onclick=ujiKoneksi;
   const btn=document.getElementById("a_login");
   if(btn&&!btn.dataset.bound){
     btn.dataset.bound="1";
@@ -634,10 +659,11 @@ async function loginPass(){
   const{data,error}=await sb.auth.signInWithPassword({email:idToAccount(id),password});
   if(error||!data.session){
     b.disabled=false;b.textContent="Masuk";
-    const m=String(error&&error.message||"");
+    const m=String(error&&error.message||"tidak diketahui");
+    __err("LOGIN GAGAL\nakun: "+idToAccount(id)+"\n"+m);
     if(/Failed to fetch|NetworkError|Load failed/i.test(m))return toast("Tidak ada koneksi ke server.");
-    if(/Invalid login/i.test(m))return toast("ID atau kata sandi salah.");
-    return toast("Gagal masuk: "+(m||"tidak diketahui"));}
+    if(/Invalid login|invalid_grant/i.test(m))return toast("ID atau kata sandi salah.");
+    return toast("Gagal masuk — lihat kotak merah.");}
   start(data.session);
 }
 window.signOut=async function(){
@@ -1404,45 +1430,3 @@ function bindNodes(){
     el.addEventListener("pointerup",e=>{
       if(pid!==e.pointerId)return;pid=null;
       if(!drag&&Date.now()-t0<420){ripple(p);treeSelect(el.getAttribute("data-id"));}
-    });
-    el.addEventListener("pointercancel",()=>{pid=null;});
-  });
-}
-function ripple(p){
-  const g=document.getElementById("tnodes");if(!g)return;
-  const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-  c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",26);
-  c.setAttribute("fill","none");c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");
-  c.style.animation="ripple .65s ease-out forwards";
-  g.appendChild(c);setTimeout(()=>c.remove(),700);
-  if(navigator.vibrate)navigator.vibrate(12);
-}
-function treeApply(){
-  const w=document.getElementById("tworld");
-  if(w)w.setAttribute("transform",`translate(${T.x},${T.y}) scale(${T.k})`);
-}
-window.treeFit=function(){
-  const svg=document.getElementById("tsvg");if(!svg||!T.nodes.length)return;
-  const r=svg.getBoundingClientRect();
-  const xs=T.nodes.map(p=>p.x),ys=T.nodes.map(p=>p.y);
-  const x0=Math.min(...xs)-80,x1=Math.max(...xs)+80,y0=Math.min(...ys)-80,y1=Math.max(...ys)+110;
-  const k=Math.min(r.width/(x1-x0),(r.height-230)/(y1-y0),1.2);
-  animateTo(r.width/2-((x0+x1)/2)*Math.max(.25,k),(r.height-30)/2-((y0+y1)/2)*Math.max(.25,k),Math.max(.25,k));
-};
-window.treeToggleShio=function(){
-  T.shio=!T.shio;
-  document.getElementById("tShio").classList.toggle("on",T.shio);
-  treeSVG();
-};
-window.treeStory=function(){
-  const gens=[...new Set(T.nodes.map(p=>p.d))].sort((a,b)=>a-b);
-  let i=0;
-  (function next(){
-    if(i>=gens.length){treeFit();toast("Sampai generasi terakhir");return;}
-    const row=T.nodes.filter(p=>p.d===gens[i]);
-    const cx=row.reduce((n,p)=>n+p.x,0)/row.length,cy=row[0].y;
-    const svg=document.getElementById("tsvg"),r=svg.getBoundingClientRect();
-    animateTo(r.width/2-cx*1,r.height*.42-cy*1,1);
-    const ch=(YU_POEM.find(y=>y[0]===(row[0].m.generasi||0))||[])[1];
-    toast(`${ch?ch+" · ":""}${row.map(p=>p.m.nama).join(", ")}`);
-    row.forEach((p,j)=>setTimeout(()=>ripple
