@@ -296,8 +296,19 @@
   <div class="eyebrow">Buku Keluarga</div>
   <h1 style="font-size:29px;font-weight:800;margin:8px 0 6px">Masuk</h1>
   <p class="note" style="margin:0 0 4px">Hanya ID keluarga yang terdaftar bisa membuka data ini.</p>
-  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v21 · POHON</p>
-  <div id="gateBody"></div>
+  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v22 · POHON</p>
+  <div id="gateBody">
+    <label>ID</label>
+    <input id="a_id" autocomplete="username" autocapitalize="characters" placeholder="MFCMMC YANI" style="letter-spacing:.06em">
+    <label>Kata sandi</label>
+    <input id="a_pass" type="password" autocomplete="current-password" placeholder="••••••">
+    <div style="height:14px"></div>
+    <button class="btn btn-primary" id="a_login">Masuk</button>
+    <p class="note" id="a_hint">Memuat…</p>
+  </div>
+  <pre id="errbox" style="display:none;white-space:pre-wrap;font-family:'JetBrains Mono',monospace;font-size:10px;
+    color:#ff9ab7;background:rgba(255,95,141,.08);border:1px solid rgba(255,95,141,.3);
+    border-radius:12px;padding:10px;margin-top:12px;max-height:180px;overflow:auto"></pre>
 </div></div>
 
 <div id="app" class="wrap"></div>
@@ -358,6 +369,14 @@
 })();
 </script>
 
+<script>
+window.__err=function(m){var b=document.getElementById("errbox");if(!b)return;
+  b.style.display="block";b.textContent=(b.textContent?b.textContent+"\n":"")+m;};
+window.addEventListener("error",function(e){
+  __err("Galat: "+(e.message||e.error)+"\n"+(e.filename||"").split("/").pop()+":"+(e.lineno||"?"));});
+window.addEventListener("unhandledrejection",function(e){
+  __err("Gagal: "+((e.reason&&e.reason.message)||e.reason));});
+</script>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -484,17 +503,15 @@ const APP_URL=location.href.split("#")[0].split("?")[0];
 /* ID diubah jadi alamat akun internal. Kata sandi tidak pernah disimpan di berkas ini. */
 const idToAccount=id=>id.trim().toLowerCase().replace(/\s+/g,".").replace(/[^a-z0-9._-]/g,"")+"@keluarga.app";
 function gateEmail(){
-  $("#gateBody").innerHTML=`<label>ID</label>
-    <input id="a_id" autocomplete="username" autocapitalize="characters" placeholder="MFCMMC YANI"
-      style="letter-spacing:.06em">
-    <label>Kata sandi</label>
-    <input id="a_pass" type="password" autocomplete="current-password" placeholder="••••••">
-    <div style="height:14px"></div>
-    <button class="btn btn-primary" id="a_login">Masuk</button>
-    <p class="note">Gunakan ID keluarga, bukan alamat email.</p>`;
-  $("#a_login").onclick=loginPass;
-  $("#a_pass").addEventListener("keydown",e=>{if(e.key==="Enter")loginPass();});
-  $("#a_id").addEventListener("keydown",e=>{if(e.key==="Enter")$("#a_pass").focus();});
+  const hint=document.getElementById("a_hint");
+  if(hint)hint.textContent="Gunakan ID keluarga, bukan alamat email.";
+  const btn=document.getElementById("a_login");
+  if(btn&&!btn.dataset.bound){
+    btn.dataset.bound="1";
+    btn.onclick=loginPass;
+    document.getElementById("a_pass").addEventListener("keydown",e=>{if(e.key==="Enter")loginPass();});
+    document.getElementById("a_id").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("a_pass").focus();});
+  }
 }
 async function loginPass(){
   const id=$("#a_id").value.trim(),password=$("#a_pass").value;
@@ -1421,25 +1438,4 @@ function skyLoop(){
     const arr=[...pts.values()];
     if(arr.length===1){
       T.x+=e.clientX-prev.x;T.y+=e.clientY-prev.y;
-      if(Math.abs(e.clientX-prev.x)+Math.abs(e.clientY-prev.y)>2)moved=true;
-      treeApply();e.preventDefault();
-    }else if(arr.length===2){
-      const d=Math.hypot(arr[0].x-arr[1].x,arr[0].y-arr[1].y);
-      const c={x:(arr[0].x+arr[1].x)/2,y:(arr[0].y+arr[1].y)/2};
-      if(lastD){
-        const k=Math.max(.22,Math.min(2.6,T.k*(d/lastD)));
-        T.x=c.x-(c.x-T.x)*(k/T.k);T.y=c.y-(c.y-T.y)*(k/T.k);T.k=k;
-        if(lastC){T.x+=c.x-lastC.x;T.y+=c.y-lastC.y;}
-        treeApply();
-      }
-      lastD=d;lastC=c;moved=true;e.preventDefault();
-    }
-  };
-  const up=e=>{pts.delete(e.pointerId);if(pts.size<2){lastD=0;lastC=null;}};
-  addEventListener("pointerdown",e=>{
-    if(e.target.closest&&e.target.closest("#tnodes"))return;
-    if(e.target.closest&&e.target.closest(".tool"))return;
-    if(e.target.closest&&e.target.closest(".detail"))return;
-    if(e.target.closest&&e.target.closest("#stage"))down(e);},{passive:true});
-  addEventListener("pointermove",move,{passive:false});
-  ad
+      if(Math.a
