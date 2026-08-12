@@ -296,7 +296,7 @@
   <div class="eyebrow">Buku Keluarga</div>
   <h1 style="font-size:29px;font-weight:800;margin:8px 0 6px">Masuk</h1>
   <p class="note" style="margin:0 0 4px">Hanya ID keluarga yang terdaftar bisa membuka data ini.</p>
-  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v22 · POHON</p>
+  <p class="note" style="margin:2px 0 0;font-family:'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--jade)">BUILD v23 · MANDIRI</p>
   <div id="gateBody">
     <label>ID</label>
     <input id="a_id" autocomplete="username" autocapitalize="characters" placeholder="MFCMMC YANI" style="letter-spacing:.06em">
@@ -377,15 +377,129 @@ window.addEventListener("error",function(e){
 window.addEventListener("unhandledrejection",function(e){
   __err("Gagal: "+((e.reason&&e.reason.message)||e.reason));});
 </script>
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+<script>
+/* ============================================================
+   Klien Supabase mandiri — memakai fetch bawaan peramban.
+   Tidak ada pustaka luar, tidak ada CDN, jadi tidak bisa gagal dimuat.
+   ============================================================ */
 const SUPABASE_URL = "https://ybodvbslkxxtvtmcovwa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D_TWQovZI5JaiUOe4tRkaQ_siXxy7h2";
+const SKEY="kel-session";
 
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}
-});
+const SBA={
+  ses:null,
+  load(){try{this.ses=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){this.ses=null;}return this.ses;},
+  save(s){this.ses=s;try{s?localStorage.setItem(SKEY,JSON.stringify(s)):localStorage.removeItem(SKEY);}catch(e){}},
+  token(){return this.ses&&this.ses.access_token;},
+  head(extra){
+    const h=Object.assign({apikey:SUPABASE_ANON_KEY},extra||{});
+    h.Authorization="Bearer "+(this.token()||SUPABASE_ANON_KEY);
+    return h;},
+  async post(path,body,hdr){
+    const r=await fetch(SUPABASE_URL+path,{method:"POST",
+      headers:Object.assign({apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"},hdr||{}),
+      body:JSON.stringify(body)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error_description||j.msg||j.message||("HTTP "+r.status));
+    return j;},
+  async refresh(){
+    if(!this.ses||!this.ses.refresh_token)return null;
+    try{
+      const j=await this.post("/auth/v1/token?grant_type=refresh_token",{refresh_token:this.ses.refresh_token});
+      const s={access_token:j.access_token,refresh_token:j.refresh_token,
+        expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),user:j.user};
+      this.save(s);return s;
+    }catch(e){this.save(null);return null;}},
+  async valid(){
+    const s=this.load();if(!s)return null;
+    if(s.expires_at&&s.expires_at-60<Math.floor(Date.now()/1000))return await this.refresh();
+    return s;}
+};
+
+function Q(table){this.t=table;this.f=[];this.m="GET";this.b=null;this.sel="*";this.pref=[];}
+Q.prototype.select=function(c){this.m=this.m==="GET"?"GET":this.m;this.sel=c||"*";return this;};
+Q.prototype.insert=function(r){this.m="POST";this.b=r;return this;};
+Q.prototype.upsert=function(r){this.m="POST";this.b=r;this.pref.push("resolution=merge-duplicates");return this;};
+Q.prototype.update=function(r){this.m="PATCH";this.b=r;return this;};
+Q.prototype.delete=function(){this.m="DELETE";return this;};
+Q.prototype.eq=function(c,v){this.f.push(encodeURIComponent(c)+"=eq."+encodeURIComponent(v));return this;};
+Q.prototype.order=function(c){this.f.push("order="+encodeURIComponent(c));return this;};
+Q.prototype.limit=function(n){this.f.push("limit="+n);return this;};
+Q.prototype._url=function(){
+  const p=[];
+  if(this.m==="GET")p.push("select="+encodeURIComponent(this.sel));
+  return SUPABASE_URL+"/rest/v1/"+this.t+(p.concat(this.f).length?"?"+p.concat(this.f).join("&"):"");};
+Q.prototype._run=async function(){
+  try{
+    await SBA.valid();
+    const h=SBA.head({"Content-Type":"application/json"});
+    this.pref.push("return=representation");
+    h.Prefer=this.pref.join(",");
+    const o={method:this.m,headers:h};
+    if(this.b)o.body=JSON.stringify(this.b);
+    const r=await fetch(this._url(),o);
+    const txt=await r.text();
+    let j=null;try{j=txt?JSON.parse(txt):null;}catch(e){}
+    if(!r.ok)return{data:null,error:new Error((j&&(j.message||j.hint))||("HTTP "+r.status))};
+    return{data:j,error:null};
+  }catch(e){return{data:null,error:e};}};
+Q.prototype.then=function(res,rej){return this._run().then(res,rej);};
+
+const sb={
+  from:t=>new Q(t),
+  auth:{
+    async getSession(){const s=await SBA.valid();return{data:{session:s},error:null};},
+    async signInWithPassword({email,password}){
+      try{
+        const j=await SBA.post("/auth/v1/token?grant_type=password",{email,password});
+        const s={access_token:j.access_token,refresh_token:j.refresh_token,
+          expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),user:j.user};
+        SBA.save(s);return{data:{session:s,user:j.user},error:null};
+      }catch(e){return{data:{session:null},error:e};}},
+    async updateUser({password}){
+      try{
+        await SBA.valid();
+        const r=await fetch(SUPABASE_URL+"/auth/v1/user",{method:"PUT",
+          headers:SBA.head({"Content-Type":"application/json"}),body:JSON.stringify({password})});
+        const j=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(j.msg||j.message||("HTTP "+r.status));
+        return{data:j,error:null};
+      }catch(e){return{data:null,error:e};}},
+    async signOut(){
+      try{await fetch(SUPABASE_URL+"/auth/v1/logout",{method:"POST",headers:SBA.head()});}catch(e){}
+      SBA.save(null);return{error:null};}
+  },
+  storage:{
+    from:bucket=>({
+      async upload(path,file,opt){
+        try{
+          await SBA.valid();
+          const h=SBA.head();h["Content-Type"]=(opt&&opt.contentType)||file.type||"application/octet-stream";
+          const r=await fetch(SUPABASE_URL+"/storage/v1/object/"+bucket+"/"+path,{method:"POST",headers:h,body:file});
+          if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.message||("HTTP "+r.status));}
+          return{data:{path},error:null};
+        }catch(e){return{data:null,error:e};}},
+      async createSignedUrl(path,exp){
+        try{
+          await SBA.valid();
+          const r=await fetch(SUPABASE_URL+"/storage/v1/object/sign/"+bucket+"/"+path,{method:"POST",
+            headers:SBA.head({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:exp||3600})});
+          const j=await r.json().catch(()=>({}));
+          const u=j.signedURL||j.signedUrl;
+          if(!r.ok||!u)throw new Error(j.message||"gagal tanda tangan");
+          return{data:{signedUrl:/^https?:/.test(u)?u:SUPABASE_URL+"/storage/v1"+(u[0]==="/"?"":"/")+u},error:null};
+        }catch(e){return{data:null,error:e};}},
+      async remove(paths){
+        try{
+          await SBA.valid();
+          const r=await fetch(SUPABASE_URL+"/storage/v1/object/"+bucket,{method:"DELETE",
+            headers:SBA.head({"Content-Type":"application/json"}),body:JSON.stringify({prefixes:paths})});
+          return{data:null,error:r.ok?null:new Error("HTTP "+r.status)};
+        }catch(e){return{data:null,error:e};}}
+    })
+  },
+  channel:()=>({on(){return this;},subscribe(){return this;}})
+};
 
 /* ============ referensi ============ */
 const MILESTONES = {
@@ -518,7 +632,12 @@ async function loginPass(){
   if(!id||!password)return toast("Isi ID dan kata sandi.");
   const b=$("#a_login");b.disabled=true;b.textContent="Memeriksa…";
   const{data,error}=await sb.auth.signInWithPassword({email:idToAccount(id),password});
-  if(error||!data.session){b.disabled=false;b.textContent="Masuk";return toast("ID atau kata sandi salah.");}
+  if(error||!data.session){
+    b.disabled=false;b.textContent="Masuk";
+    const m=String(error&&error.message||"");
+    if(/Failed to fetch|NetworkError|Load failed/i.test(m))return toast("Tidak ada koneksi ke server.");
+    if(/Invalid login/i.test(m))return toast("ID atau kata sandi salah.");
+    return toast("Gagal masuk: "+(m||"tidak diketahui"));}
   start(data.session);
 }
 window.signOut=async function(){
@@ -568,9 +687,8 @@ async function start(session){
       return;}
     render();
   }catch(e){toast("Gagal memuat dari server. Menampilkan salinan terakhir.");}
-  sb.channel("kel").on("postgres_changes",{event:"*",schema:"public"},()=>{
-    clearTimeout(window._rt);window._rt=setTimeout(()=>pull().then(render).catch(()=>{}),700);
-  }).subscribe();
+  clearInterval(window._poll);
+  window._poll=setInterval(()=>{if(!document.hidden)pull().then(render).catch(()=>{});},30000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull().then(render).catch(()=>{});});
 }
 async function tx(fn,msg){try{const{error}=await fn();if(error)throw error;await pull();render();if(msg)toast(msg);}catch(e){fail(e);}}
@@ -1083,9 +1201,11 @@ async function avatarUrl(path){
 }
 async function paintAvatars(){
   document.querySelectorAll("[data-av]").forEach(async el=>{
+    try{
     const p=el.getAttribute("data-av");if(!p||el.dataset.done)return;
     const u=await avatarUrl(p);
     if(u){el.innerHTML=`<img src="${u}" alt="">`;el.dataset.done="1";}
+    }catch(e){}
   });
 }
 const avColor=n=>AVCOL[Math.abs((n.charCodeAt(0)||65)+n.length)%AVCOL.length];
@@ -1325,117 +1445,4 @@ window.treeStory=function(){
     animateTo(r.width/2-cx*1,r.height*.42-cy*1,1);
     const ch=(YU_POEM.find(y=>y[0]===(row[0].m.generasi||0))||[])[1];
     toast(`${ch?ch+" · ":""}${row.map(p=>p.m.nama).join(", ")}`);
-    row.forEach((p,j)=>setTimeout(()=>ripple(p),j*160));
-    i++;setTimeout(next,2200);
-  })();
-};
-window.treeSelect=function(id){
-  T.sel=id;
-  document.querySelectorAll("#tsvg [data-id]").forEach(e=>{
-    const g=e.querySelector(".tnode");if(g)g.classList.toggle("sel",e.getAttribute("data-id")===id);});
-  const m=DB.family.find(x=>x.id===id);if(!m)return;
-  const a=ageParts(m.tanggal),g=ganzhi(parse(m.tanggal)),zb=zodiakBarat(parse(m.tanggal));
-  const ay=m.ayah_id&&DB.family.find(x=>x.id===m.ayah_id);
-  const ib=m.ibu_id&&DB.family.find(x=>x.id===m.ibu_id);
-  const sp=m.pasangan_id&&DB.family.find(x=>x.id===m.pasangan_id);
-  const kids=DB.family.filter(x=>x.ayah_id===id||x.ibu_id===id);
-  const nb=nextBirthday(m.tanggal);
-  document.getElementById("tDcard").innerHTML=`
-    <div style="display:flex;gap:12px;align-items:center">
-      ${avatarHTML(m,"av")}
-      <div style="flex:1"><div style="font-weight:700;font-size:17px">${esc(m.nama)}
-        ${m.nama_mandarin?`<span style="color:var(--mist);font-weight:400"> ${esc(m.nama_mandarin)}</span>`:""}</div>
-        <div style="font-size:12px;color:var(--mist)">${esc(m.relasi||"")}${a?" · "+(a.y>0?a.y+" tahun":a.totalMonths+" bulan"):""}${m.generasi?" · generasi "+m.generasi:""}</div></div>
-      <div class="tool" style="width:38px;height:38px;font-size:14px" onclick="closeDetail()">✕</div>
-    </div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">
-      ${g?`<span class="pill k">${g.shio}</span><span class="pill j">${g.yin} ${g.elemen}</span>`:""}
-      ${zb?`<span class="pill" style="color:var(--iris);border-color:rgba(124,140,255,.4)">${zb}</span>`:""}
-      ${nb?`<span class="pill ${nb.days===0?"g":""}">${nb.days===0?"ULANG TAHUN HARI INI":nb.days+" hari lagi"}</span>`:""}
-    </div>
-    <div class="note" style="margin-top:10px">
-      ${ay?`Ayah <b style="color:var(--paper)">${esc(ay.nama)}</b>`:""}${ay&&ib?" · ":""}${ib?`Ibu <b style="color:var(--paper)">${esc(ib.nama)}</b>`:""}
-      ${sp?`${(ay||ib)?"<br>":""}Pasangan <b style="color:var(--paper)">${esc(sp.nama)}</b>`:""}
-      ${kids.length?`<br>Anak: ${kids.map(k=>esc(k.nama)).join(", ")}`:""}
-      ${!ay&&!ib&&!sp&&!kids.length?"Belum ada hubungan keluarga yang diisi.":""}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeStage();editMember('${m.id}')">Buka profil</button>
-      ${kids.length?`<button class="btn btn-primary" style="flex:1" onclick="treeFocus('${kids[0].id}')">Turun ke anak</button>`
-        :ay?`<button class="btn btn-primary" style="flex:1" onclick="treeFocus('${ay.id}')">Naik ke ayah</button>`:""}
-    </div>`;
-  document.getElementById("tDetail").classList.add("on");
-};
-window.closeDetail=function(){document.getElementById("tDetail").classList.remove("on");
-  T.sel=null;document.querySelectorAll("#tsvg .tnode").forEach(e=>e.classList.remove("sel"));};
-window.treeFocus=function(id){
-  const p=T.nodes.find(n=>n.m.id===id);if(!p)return;
-  treeSelect(id);ripple(p);
-  const svg=document.getElementById("tsvg"),r=svg.getBoundingClientRect();
-  const k=Math.max(T.k,.9);
-  animateTo(r.width/2-p.x*k,r.height*.34-p.y*k,k);
-};
-function animateTo(x,y,k){
-  const sx=T.x,sy=T.y,sk=T.k,t0=performance.now();
-  cancelAnimationFrame(T.raf);
-  (function step(t){
-    const u=Math.min(1,(t-t0)/500),e=1-Math.pow(1-u,3);
-    T.x=sx+(x-sx)*e;T.y=sy+(y-sy)*e;T.k=sk+(k-sk)*e;treeApply();
-    if(u<1)T.raf=requestAnimationFrame(step);
-  })(t0);
-}
-window.treeShuffleWind=function(){
-  T.wind=T.wind===1?2.8:1;
-  for(let i=0;i<26;i++)T.leaves.push(newLeaf(true));
-  toast(T.wind>1?"Angin bertiup":"Angin reda");
-};
-function newLeaf(burst){
-  const c=document.getElementById("sky"),W=c?c.width:400;
-  return{x:Math.random()*W,y:burst?-20-Math.random()*300:-20,
-    vy:.3+Math.random()*.6,vx:(Math.random()-.5)*.4,r:2+Math.random()*3.6,
-    a:.3+Math.random()*.45,hue:["255,95,141","124,140,255","57,230,176","255,194,71"][(Math.random()*4)|0],sp:Math.random()*6.283};
-}
-let STARS=[];
-function skyLoop(){
-  const c=document.getElementById("sky");
-  if(!c||!document.getElementById("stage").classList.contains("on"))return;
-  const x=c.getContext("2d"),dp=Math.min(devicePixelRatio||1,2);
-  if(c.width!==c.clientWidth*dp||c.height!==c.clientHeight*dp){
-    c.width=c.clientWidth*dp;c.height=c.clientHeight*dp;
-    STARS=Array.from({length:70},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
-      r:(Math.random()*1.3+.3)*dp,p:Math.random()*6.283,s:.4+Math.random()}));}
-  // langit bergradien: dijamin gelap apa pun tema peramban
-  const gr=x.createRadialGradient(c.width*.5,0,0,c.width*.5,0,c.height*1.15);
-  gr.addColorStop(0,"#221a4a");gr.addColorStop(.45,"#131736");gr.addColorStop(1,"#070912");
-  x.fillStyle=gr;x.fillRect(0,0,c.width,c.height);
-  const t=performance.now()/1000;
-  STARS.forEach(st=>{const tw=.35+.65*Math.abs(Math.sin(t*st.s+st.p));
-    x.beginPath();x.fillStyle=`rgba(200,215,255,${(.5*tw).toFixed(2)})`;
-    x.arc(st.x,st.y,st.r,0,6.283);x.fill();});
-  if(T.leaves.length<38)T.leaves.push(newLeaf());
-  T.leaves=T.leaves.filter(l=>l.y<c.height+40);
-  T.leaves.forEach(l=>{
-    l.sp+=.02;l.y+=l.vy*T.wind*dp;l.x+=(l.vx*T.wind+Math.sin(l.sp)*.45)*dp;
-    x.beginPath();x.fillStyle=`rgba(${l.hue},${l.a})`;
-    x.ellipse(l.x,l.y,l.r*dp,l.r*1.8*dp,l.sp,0,6.283);x.fill();});
-  requestAnimationFrame(skyLoop);
-}
-
-/* gestur: geser + cubit */
-(function(){
-  const svg=()=>document.getElementById("tsvg");
-  let pts=new Map(),lastD=0,lastC=null,moved=false;
-  function on(e){
-    const el=svg();if(!el)return;
-    el.addEventListener(e[0],e[1],{passive:false});
-  }
-  document.addEventListener("DOMContentLoaded",()=>{});
-  const down=e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;
-    if(e.target.closest&&e.target.closest("#tsvg"))e.target.setPointerCapture&&e.target.setPointerCapture(e.pointerId);};
-  const move=e=>{
-    if(!pts.has(e.pointerId))return;
-    const prev=pts.get(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    const arr=[...pts.values()];
-    if(arr.length===1){
-      T.x+=e.clientX-prev.x;T.y+=e.clientY-prev.y;
-      if(Math.a
+    row.forEach((p,j)=>setTimeout(()=>ripple
